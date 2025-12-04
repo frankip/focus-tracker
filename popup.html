@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
+    <title>Focus Timer</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="logo">🎯 FocusTracker</span>
+            <span class="settings-icon">⚙️</span>
+        </header>
+
+        <div class="timer-display">
+            <h1 id="timer">25:00</h1>
+            <p id="status-text">Ready to focus?</p>
+        </div>
+
+        <div class="controls">
+            <button id="start-btn" class="btn-primary">Start Focus</button>
+            <button id="stop-btn" class="btn-secondary hidden">End Session</button>
+        </div>
+
+        <div class="options">
+            <label class="toggle-container">
+                <input type="checkbox" checked id="tracking-toggle">
+                <span class="checkmark"></span>
+                <span class="label-text">Track sites visited</span>
+            </label>
+        </div>
+
+        <footer>
+            <a href="dashboard.html" target="_blank" class="dashboard-link">
+                📊 View Reports
+            </a>
+        </footer>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

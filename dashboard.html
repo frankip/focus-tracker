@@ -18,22 +18,32 @@
         <div class="stats-grid">
             <div class="card">
                 <h3>Total Sessions</h3>
-                <p class="big-number">12</p>
+                <p class="big-number">0</p>
             </div>
             <div class="card">
                 <h3>Total Focus Time</h3>
-                <p class="big-number">5h 00m</p>
+                <p class="big-number">0m</p>
             </div>
             <div class="card">
                 <h3>Sites Tracked</h3>
-                <p class="big-number">45</p>
+                <p class="big-number">0</p>
             </div>
         </div>
 
         <!-- Charts and Lists -->
+        <div class="report-container">
+            <div class="card">
+                <h3>Time by Site</h3>
+                <div class="chart-wrapper">
+                    <canvas id="myPieChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Latest Session Sites</h3>
+                <ul class="site-list" id="site-list-container"></ul>
             </div>
         </div>
     </div>
-     <script src="dashboard.js"></script>    
+    <script src="dashboard.js"></script>
 </body>
 </html>

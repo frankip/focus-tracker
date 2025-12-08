@@ -76,8 +76,13 @@ function loadSessionData() {
             options: { responsive: true, maintainAspectRatio: false }
         });
         
+        const totalFocusSeconds = sessions.reduce((sum, session) => {
+            const secondsThisSession = Object.values(session.sites || {}).reduce((a, b) => a + b, 0);
+            return sum + secondsThisSession;
+        }, 0);
+
         document.querySelector('.stats-grid .card:nth-child(1) .big-number').innerText = sessions.length;
-        document.querySelector('.stats-grid .card:nth-child(2) .big-number').innerText = `${Math.round(lastSession.duration / 60)}m`;
+        document.querySelector('.stats-grid .card:nth-child(2) .big-number').innerText = formatTime(totalFocusSeconds);
         document.querySelector('.stats-grid .card:nth-child(3) .big-number').innerText = labels.length;
     });
 }

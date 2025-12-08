@@ -8,14 +8,97 @@ let timerState = {
     currentSessionId: null
 };
 
-let currentUrl = null;
-let lastUrlSwitchTime = Date.now();
-let activeTabId = null;
+let activeTab = {
+    url: null,
+    startTime: null
+};
 
 // Initialize
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.set({ sessions: [] });
+    chrome.storage.local.set({ sessions: [], visitedSites: {} });
 });
+
+function recordTimeSpent() {
+    if (!activeTab.url || !activeTab.startTime) {
+        return;
+    }
+
+    const endTime = Date.now();
+    const timeSpentInSeconds = Math.round((endTime - activeTab.startTime) / 1000);
+
+    if (timeSpentInSeconds < 1) {
+        return; 
+    }
+
+    try {
+        const domain = new URL(activeTab.url).hostname;
+        
+        chrome.storage.local.get('visitedSites', (data) => {
+            const sites = data.visitedSites || {};
+            sites[domain] = (sites[domain] || 0) + timeSpentInSeconds;
+            chrome.storage.local.set({ visitedSites: sites });
+        });
+
+    } catch (e) {
+        console.warn("Could not parse URL:", activeTab.url);
+    }
+}
+
+
+// --- GLOBAL SITE TRACKING LISTENERS ---
+
+// Fired when the active tab in a window changes.
+chrome.tabs.onActivated.addListener((activeInfo) => {
+    recordTimeSpent(); // Record time for the tab that just became inactive
+
+    chrome.tabs.get(activeInfo.tabId, (tab) => {
+        if (tab && tab.url && tab.url.startsWith('http')) {
+            activeTab.url = tab.url;
+            activeTab.startTime = Date.now();
+        } else {
+            activeTab.url = null;
+            activeTab.startTime = null;
+        }
+    });
+});
+
+// Fired when a tab is updated.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    // We only care about active tabs where the URL has changed.
+    if (tab.active && changeInfo.url) {
+        recordTimeSpent(); // Record time for the old URL.
+        
+        if (tab.url.startsWith('http')) {
+            activeTab.url = tab.url;
+            activeTab.startTime = Date.now();
+        } else {
+            activeTab.url = null;
+            activeTab.startTime = null;
+        }
+    }
+});
+
+// Fired when the currently focused window changes.
+chrome.windows.onFocusChanged.addListener((windowId) => {
+    if (windowId === chrome.windows.WINDOW_ID_NONE) {
+        // User has switched to another application
+        recordTimeSpent();
+        activeTab.url = null;
+        activeTab.startTime = null;
+    } else {
+        // User has switched back to a Chrome window, find the active tab
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0 && tabs[0].url && tabs[0].url.startsWith('http')) {
+                activeTab.url = tabs[0].url;
+                activeTab.startTime = Date.now();
+            } else {
+                activeTab.url = null;
+                activeTab.startTime = null;
+            }
+        });
+    }
+});
+
 
 // --- TIMER LOGIC ---
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -23,13 +106,11 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         if (timerState.timeLeft > 0) {
             timerState.timeLeft--;
             
-            // Update Badge Text (Icon)
             const minutes = Math.floor(timerState.timeLeft / 60);
             chrome.action.setBadgeText({ text: `${minutes}m` });
             
-            // Track the current site usage every second
             if (timerState.trackingEnabled && timerState.isRunning) {
-                trackCurrentSite(1); // Add 1 second to current site
+                trackCurrentSiteForSession(1); // Add 1 second to current site in session
             }
         } else {
             finishSession();
@@ -42,14 +123,12 @@ function startTimer() {
     
     timerState.isRunning = true;
     timerState.currentSessionId = Date.now();
-    lastUrlSwitchTime = Date.now();
     
-    // Create new session object in storage
     const newSession = {
         id: timerState.currentSessionId,
         date: new Date().toLocaleDateString(),
         duration: timerState.totalTime,
-        sites: {} // { "github.com": 120, "youtube.com": 30 }
+        sites: {}
     };
 
     chrome.storage.local.get(['sessions'], (result) => {
@@ -58,7 +137,7 @@ function startTimer() {
         chrome.storage.local.set({ sessions: sessions });
     });
 
-    chrome.alarms.create("focusTimer", { periodInMinutes: 1 / 60 }); // Ticks every second
+    chrome.alarms.create("focusTimer", { periodInMinutes: 1 / 60 });
     chrome.action.setBadgeBackgroundColor({ color: "#48bb78" });
 }
 
@@ -71,7 +150,6 @@ function stopTimer() {
 
 function finishSession() {
     stopTimer();
-    // Notification
     chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icon.png',
@@ -80,14 +158,13 @@ function finishSession() {
     });
 }
 
-// --- TRACKER LOGIC ---
-async function trackCurrentSite(secondsToAdd) {
-    if (!currentUrl) return;
+// --- SESSION-SPECIFIC TRACKER LOGIC ---
+function trackCurrentSiteForSession(secondsToAdd) {
+    if (!activeTab.url) return;
 
     try {
-        const domain = new URL(currentUrl).hostname;
+        const domain = new URL(activeTab.url).hostname;
         
-        // Get current sessions, update the last one
         chrome.storage.local.get(['sessions'], (result) => {
             let sessions = result.sessions || [];
             let currentSession = sessions.find(s => s.id === timerState.currentSessionId);
@@ -98,42 +175,24 @@ async function trackCurrentSite(secondsToAdd) {
                 }
                 currentSession.sites[domain] += secondsToAdd;
                 
-                // Save back
                 chrome.storage.local.set({ sessions: sessions });
             }
         });
     } catch (e) {
-        // Ignore invalid URLs (like chrome://)
+        // Ignore invalid URLs
     }
 }
-
-// Listen for Tab Changes
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-    if (!timerState.isRunning) return;
-    
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    currentUrl = tab.url;
-});
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (!timerState.isRunning) return;
-    if (tab.active && changeInfo.url) {
-        currentUrl = changeInfo.url;
-    }
-});
 
 // --- COMMUNICATION WITH POPUP ---
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "GET_STATUS") {
         sendResponse(timerState);
     } else if (request.action === "START_TIMER") {
-        // ...
-        startTimer(); // Ensure this function exists below
+        startTimer();
         sendResponse({ status: "started" });
     } else if (request.action === "STOP_TIMER") {
-        stopTimer(); // Ensure this function exists below
+        stopTimer();
         sendResponse({ status: "stopped" });
     }
-    // IMPORTANT: In V3, if you are async, you must return true. 
-    // Since we are synchronous here, we don't strictly need it, but it's safe.
+    return true; // Indicates that the response is sent asynchronously
 });

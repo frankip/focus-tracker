@@ -7,24 +7,29 @@
     <!-- Note: For production, download Chart.js and include it locally to avoid CSP errors -->
     <script src="chart.js"></script>
 </head>
-<body>
+<body data-theme="light">
     <nav class="navbar">
-        <div class="logo">🎯 FocusTracker Analytics</div>
-        <div class="profile">My Stats</div>
+        <div class="brand">
+            <div class="logo-circle">🎯</div>
+            <span class="logo-text">FocusTracker Analytics</span>
+        </div>
+        <div class="nav-actions">
+            <button id="theme-toggle" aria-label="Toggle theme">Dark mode</button>
+        </div>
     </nav>
 
     <div class="main-content">
         <!-- Summary Cards -->
         <div class="stats-grid">
-            <div class="card">
+            <div class="card interactive">
                 <h3>Total Sessions</h3>
                 <p class="big-number">0</p>
             </div>
-            <div class="card">
+            <div class="card interactive">
                 <h3>Total Focus Time</h3>
                 <p class="big-number">0m</p>
             </div>
-            <div class="card">
+            <div class="card interactive">
                 <h3>Sites Tracked</h3>
                 <p class="big-number">0</p>
             </div>
@@ -32,13 +37,13 @@
 
         <!-- Charts and Lists -->
         <div class="report-container">
-            <div class="card">
+            <div class="card interactive">
                 <h3>Time by Site</h3>
                 <div class="chart-wrapper">
                     <canvas id="myPieChart"></canvas>
                 </div>
             </div>
-            <div class="card">
+            <div class="card interactive">
                 <h3>Latest Session Sites</h3>
                 <ul class="site-list" id="site-list-container"></ul>
             </div>
@@ -46,8 +51,11 @@
 
         <!-- All Time Stats -->
         <div class="report-container">
-            <div class="card full-width">
+            <div class="card full-width interactive">
                 <h3>All Time Website Visits</h3>
+                <div class="actions-row">
+                    <button id="all-sites-chart-btn" class="ghost-btn">Show All-Time Chart</button>
+                </div>
                 <table id="all-sites-table">
                     <thead>
                         <tr>
@@ -59,6 +67,9 @@
                         <!-- Data will be populated by dashboard.js -->
                     </tbody>
                 </table>
+                <div class="chart-wrapper small" id="all-sites-chart-wrapper" style="display:none;">
+                    <canvas id="allSitesChart"></canvas>
+                </div>
                  <button id="clear-data-btn" class="danger-btn">Clear All Data</button>
             </div>
         </div>

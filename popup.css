@@ -1,11 +1,38 @@
+:root {
+    --bg: #eef2f6;
+    --panel: #ffffff;
+    --text: #1f2a3d;
+    --muted: #5a6a85;
+    --border: #d8e0ea;
+    --primary: #48bb78;
+    --primary-hover: #38a169;
+    --danger: #e53e3e;
+    --danger-hover: #c53030;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg: #0f172a;
+    --panel: #16233c;
+    --text: #edf2ff;
+    --muted: #9fb6d1;
+    --border: #1f2d4a;
+    --primary: #4FD1C5;
+    --primary-hover: #38B2AC;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 300px; /* Standard extension width */
+    width: 300px;
     height: 400px;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
-    color: #333;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -14,6 +41,7 @@ body {
     flex-direction: column;
     height: 100%;
     box-sizing: border-box;
+    background-color: var(--bg);
 }
 
 header {
@@ -21,7 +49,7 @@ header {
     justify-content: space-between;
     align-items: center;
     font-weight: bold;
-    color: #4a5568;
+    color: var(--text);
 }
 
 .timer-display {
@@ -32,13 +60,13 @@ header {
 h1#timer {
     font-size: 4rem;
     margin: 0;
-    color: #2d3748;
+    color: var(--text);
     font-weight: 300;
 }
 
 #status-text {
     margin: 0;
-    color: #718096;
+    color: var(--muted);
     font-size: 0.9rem;
 }
 
@@ -49,8 +77,9 @@ h1#timer {
 }
 
 .btn-primary {
-    background-color: #48bb78; /* Green for go */
-    color: white;
+    background-color: var(--primary);
+    color: #fff;
+    /* Always white for contrast on buttons */
     border: none;
     padding: 12px;
     font-size: 1.1rem;
@@ -58,20 +87,27 @@ h1#timer {
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
+    box-shadow: var(--shadow);
 }
 
 .btn-primary:hover {
-    background-color: #38a169;
+    background-color: var(--primary-hover);
 }
 
 .btn-secondary {
-    background-color: #e53e3e; /* Red for stop */
-    color: white;
+    background-color: var(--danger);
+    color: #fff;
     border: none;
     padding: 12px;
     font-size: 1.1rem;
     border-radius: 8px;
     cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--danger-hover);
 }
 
 .hidden {
@@ -86,19 +122,47 @@ h1#timer {
 
 .label-text {
     font-size: 0.85rem;
-    color: #4a5568;
+    color: var(--muted);
     margin-left: 8px;
 }
 
 footer {
-    margin-top: auto; /* Pushes to bottom */
+    margin-top: auto;
     text-align: center;
     padding-top: 15px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border);
 }
 
 .dashboard-link {
     text-decoration: none;
-    color: #3182ce;
+    color: var(--primary);
     font-weight: 500;
+    transition: color 0.2s;
+}
+
+.dashboard-link:hover {
+    color: var(--primary-hover);
+}
+
+/* Icon button styles */
+.icon-btn {
+    transition: transform 0.2s;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    background-color: rgba(128, 128, 128, 0.1) !important;
+}
+
+.dashboard-link {
+    color: #3182ce;
+}
+
+[data-theme="dark"] .dashboard-link {
+    color: #63b3ed;
 }

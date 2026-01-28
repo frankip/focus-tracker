@@ -39,6 +39,13 @@ function initializeTheme() {
             applyTheme(next);
         });
     }
+
+    // Listen for changes from the popup
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'dashboard-theme') {
+            applyTheme(event.newValue);
+        }
+    });
 }
 
 function applyTheme(theme) {
@@ -82,7 +89,7 @@ function applyTheme(theme) {
 function loadSessionData() {
     chrome.storage.local.get(['sessions'], (result) => {
         const sessions = result.sessions || [];
-        
+
         if (sessions.length === 0) {
             // Don't overwrite the entire page if all-time stats might exist
             document.querySelector('.report-container').innerHTML = "<h2>No focus sessions recorded yet.</h2>";
@@ -94,18 +101,18 @@ function loadSessionData() {
 
         const labels = Object.keys(siteData);
         const dataValues = Object.values(siteData).map(seconds => Math.round(seconds / 60)); // convert to minutes
-        
+
         const listContainer = document.getElementById('site-list-container');
         if (!listContainer) return;
         listContainer.innerHTML = '';
-        
+
         const totalSeconds = Object.values(siteData).reduce((a, b) => a + b, 0);
 
         labels.forEach((site) => {
             const time = siteData[site];
             const minutes = Math.floor(time / 60);
             const percentage = totalSeconds > 0 ? ((time / totalSeconds) * 100).toFixed(0) : 0;
-            
+
             const li = document.createElement('li');
             li.innerHTML = `
                 <span class="site-name">${site}</span>
@@ -149,8 +156,8 @@ function loadSessionData() {
                     hoverOffset: 10
                 }]
             },
-            options: { 
-                responsive: true, 
+            options: {
+                responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
@@ -181,7 +188,7 @@ function loadSessionData() {
                 }
             }
         });
-        
+
         const totalFocusSeconds = sessions.reduce((sum, session) => {
             const secondsThisSession = Object.values(session.sites || {}).reduce((a, b) => a + b, 0);
             return sum + secondsThisSession;
@@ -222,7 +229,7 @@ function renderAllTimeStats() {
             siteTd.textContent = site;
             const timeTd = document.createElement('td');
             timeTd.textContent = formatTime(seconds);
-            
+
             tr.appendChild(siteTd);
             tr.appendChild(timeTd);
             tableBody.appendChild(tr);
@@ -253,7 +260,7 @@ function formatTime(totalSeconds) {
     if (hours > 0) timeString += `${hours}h `;
     if (minutes > 0) timeString += `${minutes}m `;
     if (seconds > 0 || timeString === '') timeString += `${seconds}s`;
-    
+
     return timeString.trim();
 }
 

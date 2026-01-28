@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="popup.css">
     <title>Focus Timer</title>
 </head>
+
 <body>
     <div class="container">
         <header>
             <span class="logo">🎯 FocusTracker</span>
-            <span class="settings-icon">⚙️</span>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme"
+                    style="border: none; background: none; font-size: 1.2rem; cursor: pointer;">🌓</button>
+                <span class="settings-icon">⚙️</span>
+            </div>
         </header>
 
         <div class="timer-display">
@@ -38,4 +44,5 @@
     </div>
     <script src="popup.js"></script>
 </body>
+
 </html>

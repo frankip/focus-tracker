@@ -17,7 +17,7 @@ function updateDisplay(timeLeft, isRunning) {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
+
     if (isRunning) {
         startBtn.classList.add('hidden');
         stopBtn.classList.remove('hidden');
@@ -61,9 +61,9 @@ setInterval(() => {
 
 // Start Button
 startBtn.addEventListener('click', () => {
-    safeSendMessage({ 
-        action: "START_TIMER", 
-        tracking: trackingToggle.checked 
+    safeSendMessage({
+        action: "START_TIMER",
+        tracking: trackingToggle.checked
     }, () => {
         // Force an immediate update
         startBtn.classList.add('hidden');
@@ -79,3 +79,36 @@ stopBtn.addEventListener('click', () => {
         timerDisplay.textContent = "25:00";
     });
 });
+
+// --- THEME LOGIC ---
+function initializeTheme() {
+    // 1. Get stored theme (default light)
+    const savedTheme = localStorage.getItem('dashboard-theme') || 'light';
+    applyTheme(savedTheme);
+
+    // 2. Bind toggle button
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const current = document.body.dataset.theme;
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+        });
+    }
+}
+
+function applyTheme(theme) {
+    document.body.dataset.theme = theme;
+    localStorage.setItem('dashboard-theme', theme);
+
+    // Update button icon if needed
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = theme === 'dark' ? '☀️' : 'fq'; // Moon for light mode (switch to dark), Sun for dark mode (switch to light)
+        themeBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
+        themeBtn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+}
+
+// Initialize theme on load
+initializeTheme();
